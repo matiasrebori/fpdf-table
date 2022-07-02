@@ -1,4 +1,4 @@
-PDF Table
+API
 *********
 
 .. currentmodule:: fpdf_table.main

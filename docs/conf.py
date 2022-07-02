@@ -12,15 +12,14 @@
 #
 import os
 import sys
+# tells Sphinx that the root of the project is not the “docs” folder, but the parent folder!
 sys.path.insert(0, os.path.abspath('..'))
-
 
 # -- Project information -----------------------------------------------------
 
 project = 'FPDF Table'
 copyright = '2022, Matias Gabriel Martinez Rebori'
 author = 'Matias Gabriel Martinez Rebori'
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -30,7 +29,7 @@ author = 'Matias Gabriel Martinez Rebori'
 extensions = [
     'recommonmark',
     'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode'
+    'sphinx.ext.viewcode',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -40,7 +39,6 @@ templates_path = ['_templates']
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
 
 # -- Options for HTML output -------------------------------------------------
 
