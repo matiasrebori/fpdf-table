@@ -24,6 +24,10 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+    # cache pip    
+    - name: restore pip download cache
+      uses: syphar/restore-pip-download-cache@v1
+      
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
