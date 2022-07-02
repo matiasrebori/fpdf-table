@@ -37,6 +37,10 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      
+    # cache pip    
+    - name: restore pip download cache
+      uses: syphar/restore-pip-download-cache@v1
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
