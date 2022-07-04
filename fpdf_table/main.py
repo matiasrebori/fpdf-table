@@ -1,7 +1,10 @@
+import io
 import math
 from fpdf import FPDF
 from fpdf.enums import Align, XPos, YPos
 from fpdf.line_break import MultiLineBreak, TextLine
+import base64
+from PIL import Image
 
 
 # clase padre
@@ -481,3 +484,35 @@ class SplitTextError(Exception):
     Error to raise error when string.split() fails to split
     """
     pass
+
+
+def base64_to_image(image_base64: str):
+    """
+    convertir string base64 a objeto Imagen.
+
+    :param image_base64: string base64
+    :return: Image
+    """
+    imagen_data = base64.b64decode(image_base64)
+    try:
+        # convertir y guardar imagen
+        return Image.open(io.BytesIO(imagen_data))
+    except OSError:
+        return False
+
+
+def resize_image(img: Image, width: int, height: int) -> Image:
+    """
+     cambiar tamaño manteniendo el ratio.
+
+    :param img: imagen
+    :param width: longitud de nueva imagen.
+    :param height: altura de nueva imagen.
+    :return:
+    """
+    # si no hay imagen
+    if not img:
+        return False
+    # thumbnail image
+    img.thumbnail((width, height))
+    return img
