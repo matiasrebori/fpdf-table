@@ -731,9 +731,9 @@ class PDFTable(FPDF):
             container_height = img_height
         if img:
             self.image(img,
-                       x=PDF.calculate_center_object(x, container_length=container_width,
+                       x=self.calculate_center_object(x, container_length=container_width,
                                                      element_length=img_width),
-                       y=PDF.calculate_center_object(y, container_length=container_height,
+                       y=self.calculate_center_object(y, container_length=container_height,
                                                      element_length=img_height),
                        w=img_width, h=img_height)
 
