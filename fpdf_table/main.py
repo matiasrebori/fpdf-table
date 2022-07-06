@@ -425,7 +425,7 @@ class PDFTable(FPDF):
             # throw custom error
             raise SplitTextError
 
-    def cell_fixed(self, container_width: float, container_height: float, txt: str = '',
+    def cell_fixed(self, container_width: float, container_height: float, txt: str = '', align=Align.L,
                    line_break: bool = False, inline: bool = False):
         """
         draw a fixed size table border.
@@ -444,12 +444,12 @@ class PDFTable(FPDF):
         # border of the cell that draws the border
         if inline:
             # draw border, if inline next position is right top
-            self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.TOP)
+            self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.TOP, align=align)
             # self.ln()
             self.cell(w=container_width, h=self.default_cell_height, border=0, new_x=XPos.RIGHT, new_y=YPos.TOP)
         else:
             # if not inline next position is left margin under the border
-            self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.NEXT)
+            self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.NEXT, align=align)
             # self.ln()
             self.cell(w=container_width, h=self.default_cell_height, border=0, new_x=XPos.LMARGIN, new_y=YPos.TOP)
 
@@ -732,9 +732,9 @@ class PDFTable(FPDF):
         if img:
             self.image(img,
                        x=self.calculate_center_object(x, container_length=container_width,
-                                                     element_length=img_width),
+                                                      element_length=img_width),
                        y=self.calculate_center_object(y, container_length=container_height,
-                                                     element_length=img_height),
+                                                      element_length=img_height),
                        w=img_width, h=img_height)
 
 
