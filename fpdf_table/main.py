@@ -28,7 +28,7 @@ class PDFTable(FPDF):
     def multi_cell(
             self,
             w=0,
-            h=-1,
+            h: float | None = None,
             txt="",
             border=1,
             align=Align.J,
@@ -44,7 +44,7 @@ class PDFTable(FPDF):
             line_break=False
     ):
         # si se llama con valor, el valor default es el atributo de clase default_cell_height
-        h = self.default_cell_height if h == -1 else h
+        h = self.default_cell_height if h is None else h
         if line_break:
             new_x = XPos.LMARGIN
             new_y = YPos.NEXT
@@ -59,7 +59,7 @@ class PDFTable(FPDF):
     def cell(
             self,
             w=0,
-            h=-1,
+            h: float | None = None,
             txt="",
             border=1,
             ln="DEPRECATED",
@@ -73,7 +73,7 @@ class PDFTable(FPDF):
             line_break=False
     ):
         # si se llama con valor, el valor default es el atributo de clase default_cell_height
-        h = self.default_cell_height if h == -1 else h
+        h = self.default_cell_height if h is None else h
         # llamar a metodo del padre con nuevos argumentos
         super().cell(w, h, txt, border, ln, align, fill, link, center, markdown, new_x, new_y)
         if line_break:
