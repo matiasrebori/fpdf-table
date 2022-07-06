@@ -28,7 +28,7 @@ class PDFTable(FPDF):
     def multi_cell(
             self,
             w=0,
-            h=-1,
+            h: float | None = None,
             txt="",
             border=1,
             align=Align.J,
@@ -44,7 +44,7 @@ class PDFTable(FPDF):
             line_break=False
     ):
         # si se llama con valor, el valor default es el atributo de clase default_cell_height
-        h = self.default_cell_height if h == -1 else h
+        h = self.default_cell_height if h is None else h
         if line_break:
             new_x = XPos.LMARGIN
             new_y = YPos.NEXT
@@ -59,7 +59,7 @@ class PDFTable(FPDF):
     def cell(
             self,
             w=0,
-            h=-1,
+            h: float | None = None,
             txt="",
             border=1,
             ln="DEPRECATED",
@@ -73,7 +73,7 @@ class PDFTable(FPDF):
             line_break=False
     ):
         # si se llama con valor, el valor default es el atributo de clase default_cell_height
-        h = self.default_cell_height if h == -1 else h
+        h = self.default_cell_height if h is None else h
         # llamar a metodo del padre con nuevos argumentos
         super().cell(w, h, txt, border, ln, align, fill, link, center, markdown, new_x, new_y)
         if line_break:
@@ -425,7 +425,7 @@ class PDFTable(FPDF):
             # throw custom error
             raise SplitTextError
 
-    def cell_fixed(self, container_width: float, container_height: float, txt: str = '',
+    def cell_fixed(self, container_width: float, container_height: float, txt: str = '', align=Align.L,
                    line_break: bool = False, inline: bool = False):
         """
         draw a fixed size table border.
@@ -444,12 +444,12 @@ class PDFTable(FPDF):
         # border of the cell that draws the border
         if inline:
             # draw border, if inline next position is right top
-            self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.TOP)
+            self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.TOP, align=align)
             # self.ln()
             self.cell(w=container_width, h=self.default_cell_height, border=0, new_x=XPos.RIGHT, new_y=YPos.TOP)
         else:
             # if not inline next position is left margin under the border
-            self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.NEXT)
+            self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.NEXT, align=align)
             # self.ln()
             self.cell(w=container_width, h=self.default_cell_height, border=0, new_x=XPos.LMARGIN, new_y=YPos.TOP)
 
@@ -732,9 +732,9 @@ class PDFTable(FPDF):
         if img:
             self.image(img,
                        x=self.calculate_center_object(x, container_length=container_width,
-                                                     element_length=img_width),
+                                                      element_length=img_width),
                        y=self.calculate_center_object(y, container_length=container_height,
-                                                     element_length=img_height),
+                                                      element_length=img_height),
                        w=img_width, h=img_height)
 
 
