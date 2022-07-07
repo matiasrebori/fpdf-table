@@ -1,5 +1,6 @@
 import functools
 import math
+import os
 
 from fpdf import FPDF
 from fpdf.enums import Align, XPos, YPos
@@ -104,6 +105,37 @@ class PDFTable(FPDF):
         self.set_text_color(10, 10, 10)
         self.set_draw_color(220, 220, 220)
         self.set_fill_color(220, 220, 220)
+
+    def add_fonts_custom(self, font_name: str, font_extension: str, font_dir: str = os.path.join(os.getcwd(), 'fonts'),
+                         set_default: bool = True):
+        """
+        add custom fonts, you need the 4 most common styles of the font, and the name needs to be standard.
+
+        The normal font hast to be only the name, for the bold append: -Bold, for italic: -Oblique,
+        bolditalic: -BoldOblique. i.e. Arial.ttf,Arial-Bold.ttf,Arial-Oblique.ttf, Arial-BoldOblique.ttf
+
+        :param font_name: name of the font without extension
+        :param font_extension: extension of the font, ttf ot otf
+        :param font_dir: directory to find the font, defaults to current_working_directory/fonts, find the cwd with
+         os.getcwd().
+        :param set_default: set custom font as defult
+        :return:
+        """
+        # normal
+        font_file = os.path.join(font_dir, f'{font_name}.{font_extension}')
+        self.add_font(font_name, '', fname=font_file)
+        # bold
+        font_file = os.path.join(font_dir, f'{font_name}-Bold.{font_extension}')
+        self.add_font(font_name, 'B', fname=font_file)
+        # italic
+        font_file = os.path.join(font_dir, f'{font_name}-Oblique.{font_extension}')
+        self.add_font(font_name, 'I', fname=font_file)
+        # bold italic
+        font_file = os.path.join(font_dir, f'{font_name}-BoldOblique.{font_extension}')
+        self.add_font(font_name, 'BI', fname=font_file)
+        # setear como font por defecto
+        if set_default:
+            self.font = font_name
 
     def width_2(self) -> float:
         """
