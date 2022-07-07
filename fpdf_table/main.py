@@ -79,6 +79,20 @@ class PDFTable(FPDF):
         if line_break:
             self.ln()
 
+    def init(self):
+        """
+        before doing anything, fpdf needs to create a page, define a font and set colors
+        :return:
+        """
+        self.add_page()
+        self.set_font(self.font, '', self.size_text)
+        # black text
+        self.set_text_color(10, 10, 10)
+        # grey borders
+        self.set_draw_color(220, 220, 220)
+        # gray container
+        self.set_fill_color(220, 220, 220)
+
     def default_font(self):
         """
         return font to default values.
@@ -590,7 +604,6 @@ class PDFTable(FPDF):
         # check width_list
         width_list = self.make_width_list(width_list, columns_count)
         align_list = self.make_align_list(align, columns_count)
-        print('align_list: ', align_list)
         # draw n-1 fixed multi_cells inline
         for i in range(columns_count - 1):
             # container height for every cell is fixed
@@ -636,7 +649,7 @@ class PDFTable(FPDF):
                               container_height=max_rows * self.multi_cell_row_height, align=align_list[-1],
                               line_break=line_break)
 
-    def table_row(self, text_list: list[str], width_list: list[float] | str, align: Align | list[Align],
+    def table_row(self, text_list: list[str], width_list: list[float] = [], align: list[Align] | Align = Align.L,
                   option: str = 'line', fixed_height: float = None):
         """
         draw a row for a table.
@@ -651,13 +664,7 @@ class PDFTable(FPDF):
         :raise HeightError: height cannot be smaller than default cell height
         :raise MismatchValueError: undefined option
         """
-        if len(text_list) == 1 and len(width_list) == 1:
-            if option == 'line':
-                self.cell()
 
-        # if width_list is string, convert to empty list
-        if isinstance(width_list, str):
-            width_list = []
         if option == 'line':
             self.row_line(text_list, width_list, align, False)
         elif option == 'fixed':
@@ -671,7 +678,7 @@ class PDFTable(FPDF):
         else:
             raise MismatchValueError
 
-    def table_header(self, text_list: list[str], width_list: list[float] | str, align: Align | list[Align]):
+    def table_header(self, text_list: list[str], width_list: list[float] = [], align: list[Align] | Align = Align.L):
         """
         draw a table header for a table.
 
@@ -682,8 +689,6 @@ class PDFTable(FPDF):
         """
         columns_count: int = len(text_list)
         # if width_list is string, convert to empty list
-        if isinstance(width_list, str):
-            width_list = []
         width_list = self.make_width_list(width_list, columns_count)
         align_list = self.make_align_list(align, columns_count, Align.C)
         # set font
