@@ -35,3 +35,15 @@ Facts database <https://world.openfoodfacts.org/>`_ and offers a *simple* and
 Check out the :doc:`usage` section for further information, including how to
 :ref:`install <installation>` the project.
 
+
+.. hint:: This is a note admonition.
+   This is the second line of the first paragraph.
+
+.. important:: This is a note admonition.
+   This is the second line of the first paragraph.
+
+.. tip:: This is a note admonition.
+   This is the second line of the first paragraph.
+
+.. autofunction:: ../../pruebas.py.minimal_example
+
