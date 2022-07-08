@@ -13,8 +13,10 @@ name: Upload Python Package
 #    branches: [master]
 # trigger the action only when a release is published    
 on:
-  release:
-    types: [published]
+#  release:
+#    types: [published]
+  push:
+    branches: ["master"]
 
 permissions:
   contents: read
