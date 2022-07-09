@@ -196,6 +196,13 @@ class PDFTable(FPDF):
         """
         return (self.l_margin + (self.epw / 2)) - (self.get_string_width(text) / 2)
 
+    def get_width_effective(self):
+        """
+        effective page width: the page width minus its horizontal margins.
+        :return:
+        """
+        return self.epw
+
     @staticmethod
     def calculate_center_object(start: float, container_length: float, element_length: float) -> float:
         """
@@ -206,6 +213,26 @@ class PDFTable(FPDF):
         :param element_length: longitud del elemento.
         :return: posicion de inicio para que el elemento quede centrado
         """
+        # if container_length equals element_length it's already in the center, and prevents division by zero
+        offset = 0 if container_length == element_length else (container_length - element_length) / 2
+        return start + offset
+
+    def calculate_center_horizontal(self, start: float | None = None, container_length: float | None = None,
+                                    element_length: float | None = None) -> float:
+        """
+        calcular posicion para centrar un objeto en horizontal.
+
+        :param start: posicion de inicio inicial.
+        :param container_length: longitud del container del objeto.
+        :param element_length: longitud del elemento.
+        :return: posicion de inicio para que el elemento quede centrado
+        """
+        start = self.get_x() if start is None else start
+        container_length = self.epw - start if container_length is None else container_length
+        element_length = container_length if element_length is None else element_length
+        # if element_length > container_length the object can't fit into the container
+        if element_length > container_length:
+            raise WidthOverflowError
         # if container_length equals element_length it's already in the center, and prevents division by zero
         offset = 0 if container_length == element_length else (container_length - element_length) / 2
         return start + offset
@@ -791,7 +818,7 @@ class HeightError(Exception):
 
 class WidthOverflowError(Exception):
     """
-    Custom error to raise when a calculated width is larger than the maximum width of the page
+    Custom error to raise when a calculated width is larger than the maximum width of the page or container
     """
     pass
 
@@ -832,18 +859,47 @@ def base64_to_image(image_base64: str):
         return False
 
 
-def resize_image(img: Image, width: int, height: int) -> Image:
+def resize_image(img: Image, width: int, height: int, return_unit: str = 'mm') -> tuple[Image, float, float] | tuple[
+    bool, bool, bool]:
     """
      cambiar tamaño manteniendo el ratio.
 
     :param img: imagen
     :param width: longitud de nueva imagen.
     :param height: altura de nueva imagen.
+    :param return_unit: return unit of measurement, defaults to mm
     :return:
     """
-    # si no hay imagen
-    if not img:
-        return False
     # thumbnail image
     img.thumbnail((width, height))
-    return img
+    if img:
+        width, height = img.size
+        if return_unit == 'mm':
+            return img, PDFTable.px_to_mm(width), PDFTable.px_to_mm(height)
+        elif return_unit == 'px':
+            return img, width, height
+        else:
+            return False, False, False
+    else:
+        return False, False, False
+
+
+def add_image_local(filename: str, return_unit: str = 'mm') -> tuple[Image, float, float] | tuple[bool, bool, bool]:
+    """
+    load a local image with PIL Image and return image width and height (default unit its mm).
+
+    :param filename: a string representing a file path to an image
+    :param return_unit: return unit of measurement, defaults to mm
+    :return:
+    """
+    img = Image.open(filename)
+    if img:
+        width, height = img.size
+        if return_unit == 'mm':
+            return img, PDFTable.px_to_mm(width), PDFTable.px_to_mm(height)
+        elif return_unit == 'px':
+            return img, width, height
+        else:
+            return False, False, False
+    else:
+        return False, False, False
