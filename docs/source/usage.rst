@@ -17,25 +17,27 @@ Minimal Example
 ===============
 Code
 ----
-.. literalinclude:: ../../examples.py
+.. literalinclude:: ../../examples/code/minimal_example.py
    :language: python
-   :lines: 1,4-22
 
 PDF
 ----
 .. image:: images/minimal_example.jpg
 
+`minimal_example.pdf <https://github.com/matiasrebori/fpdf-table/blob/master/examples/pdfs/minimal_example.pdf>`_
+
 Main Features
 =============
 Code
 ----
-.. literalinclude:: ../../examples.py
+.. literalinclude:: ../../examples/code/features_example.py
    :language: python
-   :lines: 1-2,27-62
 
 PDF
 ----
 .. image:: images/main_features.jpg
+
+`main_features.pdf <https://github.com/matiasrebori/fpdf-table/blob/master/examples/pdfs/main_features.pdf>`_
 
 Usage in web APIs
 ==================
