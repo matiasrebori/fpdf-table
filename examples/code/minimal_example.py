@@ -13,7 +13,6 @@ def minimal_example():
     pdf = PDFTable()
     # before doing anything, fpdf needs to create a page, define a font and set colors
     pdf.init()
-    print('estoy')
     # table header
     pdf.table_header(['First Name', 'Last Name', 'Date of birth'])
     # table rows

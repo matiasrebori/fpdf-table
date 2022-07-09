@@ -30,7 +30,7 @@ Main Features
 =============
 Code
 ----
-.. literalinclude:: ../../examples/code/features_example.py
+.. literalinclude:: ../../examples/code/main_features.py
    :language: python
 
 PDF
@@ -38,6 +38,19 @@ PDF
 .. image:: images/main_features.jpg
 
 `main_features.pdf <https://github.com/matiasrebori/fpdf-table/blob/master/examples/pdfs/main_features.pdf>`_
+
+Image Features
+===============
+Code
+----
+.. literalinclude:: ../../examples/code/image_features.py
+   :language: python
+
+PDF
+----
+.. image:: images/image_features.jpg
+
+`image_features.pdf <https://github.com/matiasrebori/fpdf-table/blob/master/examples/pdfs/image_features.pdf>`_
 
 Usage in web APIs
 ==================
