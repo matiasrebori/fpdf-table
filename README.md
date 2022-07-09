@@ -6,4 +6,7 @@ Como utilizar esta libreria
 prueba ci
 
 $env:PYTHONPATH = "C:\Users\Matias Rebori\Downloads\fpdf-table"
+
 Get-ChildItem Env:PYTHONPATH
+
+$env:PYTHONPATH = ""
