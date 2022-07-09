@@ -2,8 +2,11 @@
 A fast library for quick PDF table reports creation
 ## Installation
 ## Get Started
-Como utilizar esta libreria
-prueba ci
+## variable de entorno
+import sys
+
+
+sys.path.insert(0, r'C:\Users\Matias Rebori\Downloads\fpdf-table')
 
 $env:PYTHONPATH = "C:\Users\Matias Rebori\Downloads\fpdf-table"
 
