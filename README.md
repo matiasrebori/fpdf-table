@@ -4,3 +4,6 @@ A fast library for quick PDF table reports creation
 ## Get Started
 Como utilizar esta libreria
 prueba ci
+
+$env:PYTHONPATH = "C:\Users\Matias Rebori\Downloads\fpdf-table"
+Get-ChildItem Env:PYTHONPATH
