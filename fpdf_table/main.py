@@ -737,6 +737,20 @@ class PDFTable(FPDF):
         else:
             raise MismatchValueError
 
+    def table_cols(self, *args: float) -> list[float]:
+        """
+        calculate widths like bootstrap grid system
+        :param args: bootstrap column widths
+        :return: list of calculated bootstrap columns widths
+        """
+        # list to save the result
+        width_list: list[float] = []
+        # check if  all elements are positive integers
+        if all(element > 0 for element in args):
+            # calculate width's
+            width_list = [self.get_width_effective() * (i / 12) for i in args]
+        return width_list
+
     def table_header(self, text_list: list[str], width_list: list[float] = [], align: list[Align] | Align = Align.L):
         """
         draw a table header for a table.
