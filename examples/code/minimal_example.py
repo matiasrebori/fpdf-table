@@ -9,10 +9,8 @@ def minimal_example():
         ['Edén ', 'Mascarenas Benavides', 'May 23, 1990'],
         ['Adrián ', 'Beltrán ', 'December 12, 1977'],
     ]
-    # initialize PDFTable
+    # initialize PDFTable, before doing anything, __init__ adds a page, sets font, size and colors
     pdf = PDFTable()
-    # before doing anything, fpdf needs to create a page, define a font and set colors
-    pdf.init()
     # table header
     pdf.table_header(['First Name', 'Last Name', 'Date of birth'])
     # table rows

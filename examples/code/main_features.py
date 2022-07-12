@@ -2,11 +2,8 @@ from fpdf_table import PDFTable, Align
 
 
 def features_example():
-    # initialize PDFTable
+    # initialize PDFTable, before doing anything, __init__ adds a page, sets font, size and colors
     pdf = PDFTable()
-    # before doing anything, fpdf needs to create a page, define a font and set colors
-    pdf.init()
-
     """
     table row
     """
@@ -20,7 +17,7 @@ def features_example():
     responsive row
     """
     # header with custom width
-    pdf.table_header(['Email', 'Address'], [pdf.width_3(), 2 * pdf.width_3()])
+    pdf.table_header(['Email', 'Address'], [pdf.calculate_width_3(), 2 * pdf.calculate_width_3()])
     # responsive row with custom width
     pdf.table_row(['large_email_example-very_large_email_example-more_large_email_example@example.com',
                    '952 Rogers Ave, Okanogan, Washington(WA), 98840'],
@@ -33,7 +30,7 @@ def features_example():
     pdf.table_header(['Description'], align=Align.C)
     large_text = """Lorem Ipsum is simply dummy text of the printing and typesetting industry....."""
     # fixed row needs fixed_height parameter
-    pdf.table_row([large_text], option='fixed', fixed_height=6 * pdf.default_cell_height)
+    pdf.table_row([large_text], option='fixed', fixed_height=6 * pdf.row_height_cell)
     # output
     pdf.output("../pdfs/main_features.pdf")
 

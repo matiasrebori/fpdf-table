@@ -10,42 +10,38 @@ import base64
 import io
 
 
-# clase padre
 class PDFTable(FPDF):
     # text and header text sizes
-    size_text = 7.5  # 7.5 pt ~ 10px
-    size_title = 9  # 9 pt ~ 12px
-    # default height if every row
-    default_cell_height = 5
+    text_normal_size = 7.5  # 7.5 pt ~ 10px
+    text_title_size = 9  # 9 pt ~ 12px
+    # default height for every row
+    row_height_cell = 5
     # height of every row in multi cell
-    multi_cell_row_height: float = 5  # mm
-    # text size used for text inside multi cell
-    multi_cell_text_size: float = 7.5  # mm
+    row_height_multi_cell: float = 5  # mm
     # font
     font: str = 'Helvetica'
 
+    def __init__(self):
+        """
+        before doing anything, fpdf needs to create a page, define a font and set colors
+        :return:
+        """
+        super().__init__()
+        self.add_page()
+        self.set_font(self.font, '', self.text_normal_size)
+        # black text
+        self.set_text_color(10, 10, 10)
+        # grey borders
+        self.set_draw_color(220, 220, 220)
+        # gray container
+        self.set_fill_color(220, 220, 220)
+
     # override multi_cell para cambiar los valores por defectos
-    # w = 0, h = 8, border = 1
-    def multi_cell(
-            self,
-            w=0,
-            h: float | None = None,
-            txt="",
-            border=1,
-            align=Align.J,
-            fill=False,
-            split_only=False,
-            link="",
-            ln="DEPRECATED",
-            max_line_height=None,
-            markdown=False,
-            print_sh=False,
-            new_x=XPos.RIGHT,
-            new_y=YPos.TOP,
-            line_break=False
-    ):
+    def multi_cell(self, w=0, h: float | None = None, txt="", border=1, align=Align.J, fill=False, split_only=False,
+                   link="", ln="DEPRECATED", max_line_height=None, markdown=False, print_sh=False, new_x=XPos.RIGHT,
+                   new_y=YPos.TOP, line_break=False):
         # si se llama con valor, el valor default es el atributo de clase default_cell_height
-        h = self.default_cell_height if h is None else h
+        h = self.row_height_cell if h is None else h
         if line_break:
             new_x = XPos.LMARGIN
             new_y = YPos.NEXT
@@ -56,52 +52,45 @@ class PDFTable(FPDF):
         #     self.ln()
 
     # override cell para cambiar los valores por defectos
-    # w = 0, h = 8, border = 1
-    def cell(
-            self,
-            w=0,
-            h: float | None = None,
-            txt="",
-            border=1,
-            ln="DEPRECATED",
-            align=Align.L,
-            fill=False,
-            link="",
-            center="DEPRECATED",
-            markdown=False,
-            new_x=XPos.RIGHT,
-            new_y=YPos.TOP,
-            line_break=False
-    ):
+    def cell(self, w=0, h: float | None = None, txt="", border=1, ln="DEPRECATED", align=Align.L, fill=False, link="",
+             center="DEPRECATED", markdown=False, new_x=XPos.RIGHT, new_y=YPos.TOP, line_break=False):
         # si se llama con valor, el valor default es el atributo de clase default_cell_height
-        h = self.default_cell_height if h is None else h
+        h = self.row_height_cell if h is None else h
         # llamar a metodo del padre con nuevos argumentos
         super().cell(w, h, txt, border, ln, align, fill, link, center, markdown, new_x, new_y)
         if line_break:
             self.ln()
 
-    def init(self):
+    def get_width_effective(self):
         """
-        before doing anything, fpdf needs to create a page, define a font and set colors
+        effective page width: the page width minus its horizontal margins.
         :return:
         """
-        self.add_page()
-        self.set_font(self.font, '', self.size_text)
-        # black text
-        self.set_text_color(10, 10, 10)
-        # grey borders
-        self.set_draw_color(220, 220, 220)
-        # gray container
-        self.set_fill_color(220, 220, 220)
+        return self.epw
 
-    def default_font(self):
+    def check_width_available(self, total_width: float):
         """
-        return font to default values.
+        check if some calculated width fits in the available page width.
+
+        :param total_width: calculated width.
+        :return:
+        :raise WidthOverflowError: calculated width doesn't fit in available page space
+        """
+        # available_width = total page width - right margin - actual x position
+        available_width = self.w - self.r_margin - self.get_x()
+        # if total width is larger than page width
+        if total_width > available_width:
+            raise WidthOverflowError
+        return
+
+    def set_defaults(self):
+        """
+        return to default values.
 
         :return:
         """
         # devolver fuente a su forma normal
-        self.set_font(self.font, '', self.size_text)
+        self.set_font(self.font, '', self.text_normal_size)
         self.set_text_color(10, 10, 10)
         self.set_draw_color(220, 220, 220)
         self.set_fill_color(220, 220, 220)
@@ -118,7 +107,7 @@ class PDFTable(FPDF):
         :param font_extension: extension of the font, ttf ot otf
         :param font_dir: directory to find the font, defaults to current_working_directory/fonts, find the cwd with
          os.getcwd().
-        :param set_default: set custom font as defult
+        :param set_default: set custom font as default
         :return:
         """
         # normal
@@ -137,7 +126,84 @@ class PDFTable(FPDF):
         if set_default:
             self.font = font_name
 
-    def width_2(self) -> float:
+    @staticmethod
+    def use_mm_to_px(mm: float) -> int:
+        """
+        convertir mm to px.
+
+        :param mm: unidad en milimetros.
+        :return: unidad en pixeles.
+        """
+        return round(3.7795275591 * mm)
+
+    @staticmethod
+    def use_px_to_mm(px: int) -> float:
+        """
+        convertir px to mm.
+
+        :param px: unidad en pixeles.
+        :return: unidad en milimetros.
+        """
+        return round(px * 0.2645833333, 3)
+
+    @staticmethod
+    def use_px_to_pt(px: int) -> float:
+        """
+        convertir px to pt.
+
+        :param px: unidad en pixeles.
+        :return: unidad en points.
+        """
+        return round(px * 0.75, 3)
+
+    @staticmethod
+    def use_object_or_dash(obj):
+        """
+        si un objeto no tiene contenido devuelve un dash -.
+
+        :param obj: objeto
+        :return: objeto o string
+        """
+        if obj:
+            return obj
+        else:
+            return '-'
+
+    @staticmethod
+    def use_object_or_empty(obj):
+        """
+        si un objeto no tiene contenido devuelve un string vacio.
+
+        :param obj: objeto
+        :return: objeto o string
+        """
+        if obj:
+            return obj
+        else:
+            return ''
+
+    @staticmethod
+    def use_object_or_text(obj, text: str):
+        """
+        si un objeto no tiene contenido devuelve un texto.
+
+        :param obj: objeto
+        :param text: texto
+        :return: objeto o string
+        """
+        # if obj is string
+        if isinstance(obj, str):
+            # if string is only whitespaces
+            if obj.isspace():
+                # set string as empty (None)
+                obj = ''
+
+        if obj:
+            return obj
+        else:
+            return text
+
+    def calculate_width_2(self) -> float:
         """
         get width for 2 columns of same width.
 
@@ -145,7 +211,7 @@ class PDFTable(FPDF):
         """
         return self.epw / 2
 
-    def width_3(self) -> float:
+    def calculate_width_3(self) -> float:
         """
         get width for 2 columns of same width.
 
@@ -153,7 +219,7 @@ class PDFTable(FPDF):
         """
         return self.epw / 3
 
-    def width_n(self, n: int) -> float:
+    def calculate_width_n(self, n: int) -> float:
         """
         get width for n columns of same width.
 
@@ -161,50 +227,8 @@ class PDFTable(FPDF):
         """
         return self.epw / n
 
-    def row_2_columns(self, txt1: str, txt2: str):
-        """
-        draw a row with two straightforward columns.
-
-        :param txt1: text 1
-        :param txt2: text 2
-        :return:
-        """
-        self.cell(w=self.width_2(), txt=txt1)
-        self.cell(w=self.width_2(), txt=txt2)
-        self.ln()
-
-    def row_3_columns(self, txt1: str, txt2: str, txt3: str):
-        """
-        draw a row with three straightforward columns.
-
-        :param txt1: text 1
-        :param txt2: text 2
-        :param txt3: text 3
-        :return:
-        """
-        self.cell(w=self.width_3(), txt=txt1)
-        self.cell(w=self.width_3(), txt=txt2)
-        self.cell(w=self.width_3(), txt=txt3)
-        self.ln()
-
-    def calculate_center_text(self, text: str) -> int:
-        """
-        calcular centro para el texto + el margen izquierdo.
-
-        :param text: texto
-        :return: posicion x
-        """
-        return (self.l_margin + (self.epw / 2)) - (self.get_string_width(text) / 2)
-
-    def get_width_effective(self):
-        """
-        effective page width: the page width minus its horizontal margins.
-        :return:
-        """
-        return self.epw
-
     @staticmethod
-    def calculate_center_object(start: float, container_length: float, element_length: float) -> float:
+    def calculate_center_generic(start: float, container_length: float, element_length: float) -> float:
         """
         calcular posicion para centrar un objeto.
 
@@ -217,8 +241,8 @@ class PDFTable(FPDF):
         offset = 0 if container_length == element_length else (container_length - element_length) / 2
         return start + offset
 
-    def calculate_center_horizontal(self, start: float | None = None, container_length: float | None = None,
-                                    element_length: float | None = None) -> float:
+    def calculate_center_x(self, start: float | None = None, container_length: float | None = None,
+                           element_length: float | None = None) -> float:
         """
         calcular posicion para centrar un objeto en horizontal.
 
@@ -238,7 +262,7 @@ class PDFTable(FPDF):
         return start + offset
 
     @staticmethod
-    def calculate_code39_width(quantity: int) -> float:
+    def calculate_width_code39(quantity: int) -> float:
         """
         calcula la longitud del codigo de barras en mm.
 
@@ -251,90 +275,13 @@ class PDFTable(FPDF):
         # total character + inter-character gap
         return character_width * quantity + (quantity - 1) * bar_width
 
-    def calculate_code39_center_x(self, text: str) -> float:
+    def calculate_center_code39_x(self, text: str) -> float:
         """calcula la posicion donde se debe dibujar el codigo de barras para que este centrado.
 
         :param text: texto del codigo de barras.
         :return: posicion de x
         """
-        return (self.l_margin + (self.epw / 2)) - (self.calculate_code39_width(len(text)) / 2)
-
-    @staticmethod
-    def mm_to_px(mm: float) -> int:
-        """
-        convertir mm to px.
-
-        :param mm: unidad en milimetros.
-        :return: unidad en pixeles.
-        """
-        return round(3.7795275591 * mm)
-
-    @staticmethod
-    def px_to_mm(px: int) -> float:
-        """
-        convertir px to mm.
-
-        :param px: unidad en pixeles.
-        :return: unidad en milimetros.
-        """
-        return round(px * 0.2645833333, 3)
-
-    @staticmethod
-    def px_to_pt(px: int) -> float:
-        """
-        convertir px to pt.
-
-        :param px: unidad en pixeles.
-        :return: unidad en points.
-        """
-        return round(px * 0.75, 3)
-
-    @staticmethod
-    def object_or_dash(obj):
-        """
-        si un objeto no tiene contenido devuelve un dash -.
-
-        :param obj: objeto
-        :return: objeto o string
-        """
-        if obj:
-            return obj
-        else:
-            return '-'
-
-    @staticmethod
-    def object_or_empty(obj):
-        """
-        si un objeto no tiene contenido devuelve un string vacio.
-
-        :param obj: objeto
-        :return: objeto o string
-        """
-        if obj:
-            return obj
-        else:
-            return ''
-
-    @staticmethod
-    def object_or_text(obj, text: str):
-        """
-        si un objeto no tiene contenido devuelve un texto.
-
-        :param obj: objeto
-        :param text: texto
-        :return: objeto o string
-        """
-        # if obj is string
-        if isinstance(obj, str):
-            # if string is only whitespaces
-            if obj.isspace():
-                # set string as empty (None)
-                obj = ''
-
-        if obj:
-            return obj
-        else:
-            return text
+        return (self.l_margin + (self.epw / 2)) - (self.calculate_width_code39(len(text)) / 2)
 
     def calculate_text_fragments(self, w=0, txt="", row_quantity=1, justify=True, markdown=False) \
             -> tuple[list[TextLine], bool]:
@@ -506,6 +453,7 @@ class PDFTable(FPDF):
         :param container_width: container_width
         :param container_height: container_height
         :param txt: text
+        :param align: text align
         :param line_break: perform a new line
         :param inline: next Y with be in the same line
         :return:
@@ -519,12 +467,12 @@ class PDFTable(FPDF):
             # draw border, if inline next position is right top
             self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.TOP, align=align)
             # self.ln()
-            self.cell(w=container_width, h=self.default_cell_height, border=0, new_x=XPos.RIGHT, new_y=YPos.TOP)
+            self.cell(w=container_width, h=self.row_height_cell, border=0, new_x=XPos.RIGHT, new_y=YPos.TOP)
         else:
             # if not inline next position is left margin under the border
             self.cell(w=container_width, h=container_height, txt=txt, new_x=XPos.LEFT, new_y=YPos.NEXT, align=align)
             # self.ln()
-            self.cell(w=container_width, h=self.default_cell_height, border=0, new_x=XPos.LMARGIN, new_y=YPos.TOP)
+            self.cell(w=container_width, h=self.row_height_cell, border=0, new_x=XPos.LMARGIN, new_y=YPos.TOP)
 
         if line_break:
             self.ln()
@@ -560,22 +508,7 @@ class PDFTable(FPDF):
         self.cell_fixed(w, container_height, line_break=line_break, inline=inline)
         return text_overflow
 
-    def check_available_width(self, total_width: float):
-        """
-        check if some calculated width fits in the available page width.
-
-        :param total_width: calculated width.
-        :return:
-        :raise WidthOverflowError: calculated width doesn't fit in available page space
-        """
-        # available_width = total page width - right margin - actual x position
-        available_width = self.w - self.r_margin - self.get_x()
-        # if total width is larger than page width
-        if total_width > available_width:
-            raise WidthOverflowError
-        return
-
-    def make_width_list(self, width_list: list[float], columns_count: int) -> list[float]:
+    def calculate_width_list(self, width_list: list[float], columns_count: int) -> list[float]:
         """
         if width_list is not empty check the total width ,if width_list is empty make list of equals width´s.
 
@@ -592,19 +525,20 @@ class PDFTable(FPDF):
             # calculate total width
             total_width = functools.reduce(lambda a, b: a + b, width_list)
             # check width
-            self.check_available_width(total_width)
+            self.check_width_available(total_width)
         else:
             # if the list is empty, make list of equals width´s. i.e. [10,10,10]
-            width_list = [self.width_n(columns_count)] * columns_count
+            width_list = [self.calculate_width_n(columns_count)] * columns_count
         return width_list
 
-    def make_align_list(self, align: Align | list[Align], columns_count: int, default_value: Align = Align.J) \
+    def calculate_align_list(self, align: Align | list[Align], columns_count: int, default_value: Align = Align.J) \
             -> list[Align]:
         """
         make list of alignments.
 
         :param align: list of alignment or one alignment value
         :param columns_count: columns count
+        :param default_value: if is an empty list use align passed here
         :return:
         """
         # if align is only one value
@@ -624,8 +558,8 @@ class PDFTable(FPDF):
                 align_list = [default_value] * columns_count
             return align_list
 
-    def row_line(self, text_list: list[str], width_list: list[float], align: Align | list[Align],
-                 line_break: bool = False):
+    def draw_row_line(self, text_list: list[str], width_list: list[float], align: Align | list[Align],
+                      line_break: bool = False):
         """
         draw n columns in the same row, columns height are 1 column.
 
@@ -637,8 +571,8 @@ class PDFTable(FPDF):
         """
         columns_count: int = len(text_list)
         # check width_list
-        width_list = self.make_width_list(width_list, columns_count)
-        align_list = self.make_align_list(align, columns_count, Align.L)
+        width_list = self.calculate_width_list(width_list, columns_count)
+        align_list = self.calculate_align_list(align, columns_count, Align.L)
         # draw n-1 cells inline
         for i in range(columns_count - 1):
             # draw cell
@@ -647,8 +581,8 @@ class PDFTable(FPDF):
         self.cell(w=width_list[-1], txt=text_list[-1], align=align_list[-1], line_break=line_break)
         self.ln()
 
-    def row_fixed(self, text_list: list[str], width_list: list[float], align: Align | list[Align],
-                  fixed_height: float = None, line_break: bool = False):
+    def draw_row_fixed(self, text_list: list[str], width_list: list[float], align: Align | list[Align],
+                       fixed_height: float = None, line_break: bool = False):
         """
         draw n columns in the same row, columns height is fixed.
 
@@ -661,19 +595,19 @@ class PDFTable(FPDF):
         """
         columns_count: int = len(text_list)
         # check width_list
-        width_list = self.make_width_list(width_list, columns_count)
-        align_list = self.make_align_list(align, columns_count)
+        width_list = self.calculate_width_list(width_list, columns_count)
+        align_list = self.calculate_align_list(align, columns_count)
         # draw n-1 fixed multi_cells inline
         for i in range(columns_count - 1):
             # container height for every cell is fixed
-            self.multi_cell_fixed(w=width_list[i], txt=text_list[i], row_height=self.multi_cell_row_height,
+            self.multi_cell_fixed(w=width_list[i], txt=text_list[i], row_height=self.row_height_multi_cell,
                                   container_height=fixed_height, align=align_list[i], inline=True)
         # last cell doesn't have to be inline ir order to leave the cursor under the cells, line break is optional
-        self.multi_cell_fixed(w=width_list[-1], txt=text_list[-1], row_height=self.multi_cell_row_height,
+        self.multi_cell_fixed(w=width_list[-1], txt=text_list[-1], row_height=self.row_height_multi_cell,
                               container_height=fixed_height, align=align_list[-1], line_break=line_break)
 
-    def row_responsive(self, text_list: list[str], width_list: list[float], align: Align | list[Align],
-                       line_break: bool = False):
+    def draw_row_responsive(self, text_list: list[str], width_list: list[float], align: Align | list[Align],
+                            line_break: bool = False):
         """
         draw n columns in the same row, every column has height equals to the column with maximum height.
 
@@ -685,8 +619,8 @@ class PDFTable(FPDF):
         """
         columns_count: int = len(text_list)
         # check width_list
-        width_list = self.make_width_list(width_list, columns_count)
-        align_list = self.make_align_list(align, columns_count)
+        width_list = self.calculate_width_list(width_list, columns_count)
+        align_list = self.calculate_align_list(align, columns_count)
         # calculate maximum number of rows, so every cell will have the same amount of rows
         max_rows: int = 0
         for i in range(columns_count):
@@ -700,83 +634,16 @@ class PDFTable(FPDF):
         for i in range(columns_count - 1):
             # container height for every cell will be the maximum height, that is,
             # maximum number of rows * height of every row
-            self.multi_cell_fixed(w=width_list[i], txt=text_list[i], row_height=self.multi_cell_row_height,
-                                  container_height=max_rows * self.multi_cell_row_height, align=align_list[i],
+            self.multi_cell_fixed(w=width_list[i], txt=text_list[i], row_height=self.row_height_multi_cell,
+                                  container_height=max_rows * self.row_height_multi_cell, align=align_list[i],
                                   inline=True)
         # last cell doesn't have to be inline ir order to leave the cursor under the cells, line break is optional
-        self.multi_cell_fixed(w=width_list[-1], txt=text_list[-1], row_height=self.multi_cell_row_height,
-                              container_height=max_rows * self.multi_cell_row_height, align=align_list[-1],
+        self.multi_cell_fixed(w=width_list[-1], txt=text_list[-1], row_height=self.row_height_multi_cell,
+                              container_height=max_rows * self.row_height_multi_cell, align=align_list[-1],
                               line_break=line_break)
 
-    def table_row(self, text_list: list[str], width_list: list[float] = [], align: list[Align] | Align = Align.L,
-                  option: str = 'line', fixed_height: float = None):
-        """
-        draw a row for a table.
-
-        :param text_list: list of the texts to write
-        :param width_list: list of width´s for every column
-        :param option: define what type of row to draw
-        :param fixed_height: height if option is fixed
-        :param align: alignment
-        :return:
-        :raise MissingValueError: a value was expected and wasn't found
-        :raise HeightError: height cannot be smaller than default cell height
-        :raise MismatchValueError: undefined option
-        """
-
-        if option == 'line':
-            self.row_line(text_list, width_list, align, False)
-        elif option == 'fixed':
-            if not fixed_height:
-                raise MissingValueError
-            if fixed_height < self.default_cell_height:
-                raise HeightError
-            self.row_fixed(text_list, width_list, align, fixed_height, False)
-        elif option == 'responsive':
-            self.row_responsive(text_list, width_list, align, False)
-        else:
-            raise MismatchValueError
-
-    def table_cols(self, *args: float) -> list[float]:
-        """
-        calculate widths like bootstrap grid system
-        :param args: bootstrap column widths
-        :return: list of calculated bootstrap columns widths
-        """
-        # list to save the result
-        width_list: list[float] = []
-        # check if  all elements are positive integers
-        if all(element > 0 for element in args):
-            # calculate width's
-            width_list = [self.get_width_effective() * (i / 12) for i in args]
-        return width_list
-
-    def table_header(self, text_list: list[str], width_list: list[float] = [], align: list[Align] | Align = Align.L):
-        """
-        draw a table header for a table.
-
-        :param text_list: list of the texts to write
-        :param width_list: list of width´s for every column
-        :param align: alignment
-        :return:
-        """
-        columns_count: int = len(text_list)
-        # if width_list is string, convert to empty list
-        width_list = self.make_width_list(width_list, columns_count)
-        align_list = self.make_align_list(align, columns_count, Align.C)
-        # set font
-        self.set_font(self.font, 'B', self.size_title)
-        # draw n-1 cells inline
-        for i in range(columns_count - 1):
-            # draw cell
-            self.cell(w=width_list[i], txt=text_list[i], align=align_list[i], fill=True)
-        # draw last column with a line break
-        self.cell(w=width_list[-1], txt=text_list[-1], align=align_list[-1], fill=True, line_break=True)
-        # default font
-        self.set_font(self.font, '', self.size_text)
-
-    def image_center(self, img: any, x: float = None, y: float = None, img_width: float = 0, img_height: float = 0,
-                     container_width: float = None, container_height: float = None):
+    def draw_image_center(self, img: any, x: float = None, y: float = None, img_width: float = 0, img_height: float = 0,
+                          container_width: float = None, container_height: float = None):
         """
         draw an image and center its position in a given container.
 
@@ -809,11 +676,78 @@ class PDFTable(FPDF):
             container_height = img_height
         if img:
             self.image(img,
-                       x=self.calculate_center_object(x, container_length=container_width,
-                                                      element_length=img_width),
-                       y=self.calculate_center_object(y, container_length=container_height,
-                                                      element_length=img_height),
+                       x=self.calculate_center_generic(x, container_length=container_width,
+                                                       element_length=img_width),
+                       y=self.calculate_center_generic(y, container_length=container_height,
+                                                       element_length=img_height),
                        w=img_width, h=img_height)
+
+    def table_header(self, text_list: list[str], width_list: list[float] = [], align: list[Align] | Align = Align.L):
+        """
+        draw a table header for a table.
+
+        :param text_list: list of the texts to write
+        :param width_list: list of width´s for every column
+        :param align: alignment
+        :return:
+        """
+        columns_count: int = len(text_list)
+        # if width_list is string, convert to empty list
+        width_list = self.calculate_width_list(width_list, columns_count)
+        align_list = self.calculate_align_list(align, columns_count, Align.C)
+        # set font
+        self.set_font(self.font, 'B', self.text_title_size)
+        # draw n-1 cells inline
+        for i in range(columns_count - 1):
+            # draw cell
+            self.cell(w=width_list[i], txt=text_list[i], align=align_list[i], fill=True)
+        # draw last column with a line break
+        self.cell(w=width_list[-1], txt=text_list[-1], align=align_list[-1], fill=True, line_break=True)
+        # default font
+        self.set_font(self.font, '', self.text_normal_size)
+
+    def table_row(self, text_list: list[str], width_list: list[float] = [], align: list[Align] | Align = Align.L,
+                  option: str = 'line', fixed_height: float = None):
+        """
+        draw a row for a table.
+
+        :param text_list: list of the texts to write
+        :param width_list: list of width´s for every column
+        :param option: define what type of row to draw
+        :param fixed_height: height if option is fixed
+        :param align: alignment
+        :return:
+        :raise MissingValueError: a value was expected and wasn't found
+        :raise HeightError: height cannot be smaller than default cell height
+        :raise MismatchValueError: undefined option
+        """
+
+        if option == 'line':
+            self.draw_row_line(text_list, width_list, align, False)
+        elif option == 'fixed':
+            if not fixed_height:
+                raise MissingValueError
+            if fixed_height < self.row_height_cell:
+                raise HeightError
+            self.draw_row_fixed(text_list, width_list, align, fixed_height, False)
+        elif option == 'responsive':
+            self.draw_row_responsive(text_list, width_list, align, False)
+        else:
+            raise MismatchValueError
+
+    def table_cols(self, *args: float) -> list[float]:
+        """
+        calculate widths like bootstrap grid system
+        :param args: bootstrap column widths
+        :return: list of calculated bootstrap columns widths
+        """
+        # list to save the result
+        width_list: list[float] = []
+        # check if  all elements are positive integers
+        if all(element > 0 for element in args):
+            # calculate width's
+            width_list = [self.get_width_effective() * (i / 12) for i in args]
+        return width_list
 
 
 class SplitTextError(Exception):
@@ -873,8 +807,8 @@ def base64_to_image(image_base64: str):
         return False
 
 
-def resize_image(img: Image, width: int, height: int, return_unit: str = 'mm') -> tuple[Image, float, float] | tuple[
-    bool, bool, bool]:
+def resize_image(img: Image, width: int, height: int, return_unit: str = 'mm') \
+        -> tuple[Image, float, float] | tuple[bool, bool, bool]:
     """
      cambiar tamaño manteniendo el ratio.
 
@@ -889,7 +823,7 @@ def resize_image(img: Image, width: int, height: int, return_unit: str = 'mm') -
     if img:
         width, height = img.size
         if return_unit == 'mm':
-            return img, PDFTable.px_to_mm(width), PDFTable.px_to_mm(height)
+            return img, PDFTable.use_px_to_mm(width), PDFTable.use_px_to_mm(height)
         elif return_unit == 'px':
             return img, width, height
         else:
@@ -910,7 +844,7 @@ def add_image_local(filename: str, return_unit: str = 'mm') -> tuple[Image, floa
     if img:
         width, height = img.size
         if return_unit == 'mm':
-            return img, PDFTable.px_to_mm(width), PDFTable.px_to_mm(height)
+            return img, PDFTable.use_px_to_mm(width), PDFTable.use_px_to_mm(height)
         elif return_unit == 'px':
             return img, width, height
         else:
