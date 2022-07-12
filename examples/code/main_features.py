@@ -24,7 +24,7 @@ def features_example():
     # responsive row with custom width
     pdf.table_row(['large_email_example-very_large_email_example-more_large_email_example@example.com',
                    '952 Rogers Ave, Okanogan, Washington(WA), 98840'],
-                  [pdf.width_3(), 2 * pdf.width_3()], option='responsive')
+                  pdf.table_cols(4, 8), option='responsive')
 
     """
     fixed height row
