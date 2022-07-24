@@ -36,5 +36,5 @@ setup(
     ],
     packages=["fpdf_table"],
     include_package_data=True,
-    install_requires=["fpdf2"]
+    install_requires=["fpdf2==2.5.4"]
 )
