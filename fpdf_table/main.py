@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import functools
 import math
 import os
@@ -682,7 +684,8 @@ class PDFTable(FPDF):
                                                        element_length=img_height),
                        w=img_width, h=img_height)
 
-    def table_header(self, text_list: list[str], width_list: list[float] = [], align: list[Align] | Align = Align.L):
+    def table_header(self, text_list: list[str], width_list: list[float] = [], align: list[Align] | Align = Align.L,
+                     fill: bool = True, border: int = 1):
         """
         draw a table header for a table.
 
@@ -700,9 +703,9 @@ class PDFTable(FPDF):
         # draw n-1 cells inline
         for i in range(columns_count - 1):
             # draw cell
-            self.cell(w=width_list[i], txt=text_list[i], align=align_list[i], fill=True)
+            self.cell(w=width_list[i], txt=text_list[i], align=align_list[i], fill=fill, border=border)
         # draw last column with a line break
-        self.cell(w=width_list[-1], txt=text_list[-1], align=align_list[-1], fill=True, line_break=True)
+        self.cell(w=width_list[-1], txt=text_list[-1], align=align_list[-1], fill=fill, border=border, line_break=True)
         # default font
         self.set_font(self.font, '', self.text_normal_size)
 
