@@ -16,7 +16,7 @@ on:
 #  release:
 #    types: [published]
   push:
-    branches: ["master"]
+    branches: ["release"]
 
 permissions:
   contents: read
